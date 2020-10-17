@@ -10,10 +10,7 @@ import java.util.Set;
 public class App {
     public static void main(String[] args) throws Exception {
 
-        BPlusTree test = new BPlusTree("data.csv", 0);
-        while(!test.indexes.isEmpty()){
-            System.out.println(test.indexes.poll());
-        }
-
+        BPlusTree test = new BPlusTree("data.csv", 4);
+        
     }
 }
