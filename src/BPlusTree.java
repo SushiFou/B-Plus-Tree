@@ -18,13 +18,37 @@ public class BPlusTree {
 
     int degree;
     InnerNode root = null;
-    LeafNode firstLeafNode;
+    public LeafNode firstLeafNode;
 
     BPlusTree(String file, int degree) throws NumberFormatException, Exception {
 
         this.degree = degree;
         this.firstLeafNode = new LeafNode();
         add_file(file);
+    }
+
+    void print_Tree (Node node, int h){
+        if(node != null){
+            for(int key : node.keys){
+                for(int i = 0 ; i<h; i++){
+                    System.out.print("|---");
+                }
+                System.out.println(key);
+            }
+            // System.out.println();
+            if(!(node instanceof LeafNode)){
+                for(Node child:((InnerNode) node).children){
+                    print_Tree(child,h+1);
+                    System.out.println("-----------------");
+                }
+            }                        
+        }
+    }
+
+    void print_Tree() {
+        if (this.root != null) {
+            this.print_Tree(this.root,0);
+        }
     }
 
     // read and add whole csv
@@ -47,16 +71,24 @@ public class BPlusTree {
     public void add(Integer key, Data data) throws Exception {
 
         // find good leafNode
-        LeafNode freeLeaf = (this.root == null) ? this.firstLeafNode : findLeafNode(this.root, key);
+        System.out.println("We want to add the key : " + key);
+
+        LeafNode freeLeaf = (this.root == null) ? this.firstLeafNode : findLeafNode(key);
+        System.out.println("We found the leafNode :" + freeLeaf.keys);
+        if (freeLeaf.parent != null) {
+            System.out.println("With parents :" + freeLeaf.parent.keys);
+        }
+
         // add into
         freeLeaf.addData(key, data);
         // if the add generated an overflow
         if (freeLeaf.isOverflow()) {
-
+            System.out.println("LeafNode Overflow");
             Node broNode = freeLeaf.split();
 
             // split for the first time
             if (freeLeaf.parent == null) {
+                System.out.println("parent is null");
                 // create parent for broNode and actual leafNode
                 InnerNode newParent = new InnerNode();
                 newParent.keys.add(broNode.keys.get(0));
@@ -66,17 +98,25 @@ public class BPlusTree {
                 broNode.parent = newParent;
                 this.root = newParent;
             }
+
             // update parents
             else {
+                System.out.println("parent is not null");
+                System.out.println("old keys " + freeLeaf.parent.keys);
                 freeLeaf.parent.addKey(broNode.keys.get(0), broNode);
-
+                for (Node child : freeLeaf.parent.children){
+                    System.out.println("Child Keys : " + child.keys);
+                    System.out.println("child parent " + child.parent.keys);
+                }
+                System.out.println("new keys " + freeLeaf.parent.keys);
                 if (freeLeaf.parent.isOverflow()) {
-                    
+
+                    System.out.println(" is Overflow");
                     Node p = freeLeaf.parent;
                     // repeat until no split is possible
                     while (p != null) {
                         if (p.isOverflow()) {
-                             p = p.split(); // return parent
+                            p = p.split(); // return parent
                         } else {
                             break;
                         }
@@ -86,11 +126,36 @@ public class BPlusTree {
         }
     }
 
+    private LeafNode findLeafNode(int key) {
+
+        int i;
+        // Find next node on path to appropriate leaf node
+        if (key < root.keys.get(root.keys.size() - 1)) {
+            for (i = 0; i < root.keys.size(); i++) {
+                if (key < root.keys.get(i)) {
+                    break;
+                }
+            }
+        } else {
+            i = root.keys.size();
+        }
+        // return child if until child found is leafnode
+        Node child = root.children.get(i);
+        if (child instanceof LeafNode) {
+            System.out.println("his parent is " + child.parent);
+
+            System.out.println("his parent is " + ((LeafNode) child).parent);
+            return (LeafNode) child;
+        } else {
+            return findLeafNode((InnerNode) child, key);
+        }
+    }
+
     private LeafNode findLeafNode(InnerNode node, int key) {
 
         int i;
         // Find next node on path to appropriate leaf node
-        for (i = 0; i < this.degree - 1; i++) {
+        for (i = 0; i < node.keys.size(); i++) {
             if (key < node.keys.get(i)) {
                 break;
             }
@@ -104,13 +169,12 @@ public class BPlusTree {
         }
     }
 
-    private class LeafNode extends Node {
+    class LeafNode extends Node {
 
         ArrayList<Data> list_data = new ArrayList<Data>();
         LeafNode next = null;
         LeafNode previous = null;
         int max_keys = degree - 1;
-        InnerNode parent = null;
 
         @Override
         Data getData(Integer key) {
@@ -135,7 +199,7 @@ public class BPlusTree {
             if (binarySearch >= 0) {
                 // we can add more data to existing key
             } else {
-                System.out.println("we add : " + key);
+                // System.out.println("we add : " + key);
                 keys.add(idx, key);
                 list_data.add(idx, data);
             }
@@ -157,7 +221,7 @@ public class BPlusTree {
             list_data.subList(start, keys.size()).clear();
 
             // family link
-            if(this.next!=null){
+            if (this.next != null) {
                 broNode.next = this.next;
                 this.next.previous = broNode;
             }
@@ -177,24 +241,26 @@ public class BPlusTree {
         }
     }
 
-    private class InnerNode extends Node {
+    class InnerNode extends Node {
 
         ArrayList<Node> children = new ArrayList<Node>();
         int max_keys = degree - 1;
         int max_children = degree;
-        InnerNode parent = null;
 
         void addKey(Integer key, Node child) throws Exception {
             // binarySearch returns index where we can insert
             // this methods automatically sort the list in order
             int binarySearch = Collections.binarySearch(keys, key);
             int idx = binarySearch >= 0 ? binarySearch : -binarySearch - 1;
+
             if (binarySearch >= 0) {
                 throw new Exception("Key " + key + " already present");
             } else {
-                System.out.println("we add : " + key);
+                // System.out.println("we add : " + key);
                 keys.add(idx, key);
-                children.add(idx, child);
+                // pb here
+                children.add(idx + 1, child);
+                child.parent = this;
             }
         }
 
@@ -228,8 +294,15 @@ public class BPlusTree {
             // create brother node and add all right part of list
             InnerNode broNode = new InnerNode();
             int start = (keys.size() / 2);
+            int key_to_promote = keys.get(start);
             for (int i = start; i < keys.size(); i++) {
-                broNode.addKey(keys.get(i), children.get(i));
+                System.out.println(keys.get(i));
+                System.out.println(children.get(i+1).keys);
+                if (i != start) {
+                    broNode.keys.add(keys.get(i));
+                }
+                broNode.children.add(children.get(i+1));
+                children.get(i+1).parent = broNode;
             }
 
             // clear right part of list
@@ -242,19 +315,19 @@ public class BPlusTree {
                 InnerNode newRoot = new InnerNode();
                 newRoot.children.add(this);
                 newRoot.children.add(broNode);
-                
-                newRoot.keys.add(broNode.keys.get(0));
+
+                newRoot.keys.add(key_to_promote);
                 this.parent = newRoot;
                 broNode.parent = newRoot;
 
                 root = newRoot;
-    
+
             } else {
-                
-                this.parent.addKey(broNode.keys.get(0), broNode);
-                
+
+                this.parent.addKey(key_to_promote, broNode);
+
             }
-            
+
             return this.parent;
         }
 
