@@ -35,7 +35,6 @@ public class BPlusTree {
                 }
                 System.out.println(key);
             }
-            // System.out.println();
             if(!(node instanceof LeafNode)){
                 for(Node child:((InnerNode) node).children){
                     print_Tree(child,h+1);
@@ -47,6 +46,7 @@ public class BPlusTree {
 
     void print_Tree() {
         if (this.root != null) {
+            System.out.println("B+Tree Printer :");
             this.print_Tree(this.root,0);
         }
     }
@@ -102,16 +102,10 @@ public class BPlusTree {
             // update parents
             else {
                 System.out.println("parent is not null");
-                System.out.println("old keys " + freeLeaf.parent.keys);
                 freeLeaf.parent.addKey(broNode.keys.get(0), broNode);
-                for (Node child : freeLeaf.parent.children){
-                    System.out.println("Child Keys : " + child.keys);
-                    System.out.println("child parent " + child.parent.keys);
-                }
-                System.out.println("new keys " + freeLeaf.parent.keys);
                 if (freeLeaf.parent.isOverflow()) {
 
-                    System.out.println(" is Overflow");
+                    System.out.println("parent is Overflow");
                     Node p = freeLeaf.parent;
                     // repeat until no split is possible
                     while (p != null) {
@@ -142,9 +136,6 @@ public class BPlusTree {
         // return child if until child found is leafnode
         Node child = root.children.get(i);
         if (child instanceof LeafNode) {
-            System.out.println("his parent is " + child.parent);
-
-            System.out.println("his parent is " + ((LeafNode) child).parent);
             return (LeafNode) child;
         } else {
             return findLeafNode((InnerNode) child, key);
@@ -199,7 +190,6 @@ public class BPlusTree {
             if (binarySearch >= 0) {
                 // we can add more data to existing key
             } else {
-                // System.out.println("we add : " + key);
                 keys.add(idx, key);
                 list_data.add(idx, data);
             }
@@ -256,7 +246,6 @@ public class BPlusTree {
             if (binarySearch >= 0) {
                 throw new Exception("Key " + key + " already present");
             } else {
-                // System.out.println("we add : " + key);
                 keys.add(idx, key);
                 // pb here
                 children.add(idx + 1, child);
@@ -296,8 +285,6 @@ public class BPlusTree {
             int start = (keys.size() / 2);
             int key_to_promote = keys.get(start);
             for (int i = start; i < keys.size(); i++) {
-                System.out.println(keys.get(i));
-                System.out.println(children.get(i+1).keys);
                 if (i != start) {
                     broNode.keys.add(keys.get(i));
                 }
@@ -307,7 +294,7 @@ public class BPlusTree {
 
             // clear right part of list
             keys.subList(start, keys.size()).clear();
-            children.subList(start, keys.size()).clear();
+            children.subList(start+1, children.size()).clear();
 
             if (parent == null) {
 
