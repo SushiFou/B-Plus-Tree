@@ -27,27 +27,27 @@ public class BPlusTree {
         add_file(file);
     }
 
-    void print_Tree (Node node, int h){
-        if(node != null){
-            for(int key : node.keys){
-                for(int i = 0 ; i<h; i++){
+    void print_Tree(Node node, int h) {
+        if (node != null) {
+            for (int key : node.keys) {
+                for (int i = 0; i < h; i++) {
                     System.out.print("|---");
                 }
                 System.out.println(key);
             }
-            if(!(node instanceof LeafNode)){
-                for(Node child:((InnerNode) node).children){
-                    print_Tree(child,h+1);
+            if (!(node instanceof LeafNode)) {
+                for (Node child : ((InnerNode) node).children) {
+                    print_Tree(child, h + 1);
                     System.out.println("-----------------");
                 }
-            }                        
+            }
         }
     }
 
     void print_Tree() {
         if (this.root != null) {
             System.out.println("B+Tree Printer :");
-            this.print_Tree(this.root,0);
+            this.print_Tree(this.root, 0);
         }
     }
 
@@ -120,21 +120,34 @@ public class BPlusTree {
         }
     }
 
+    public Data search(int key) throws Exception {
+        
+        LeafNode leafNode= findLeafNode(key);
+        
+        for (int i = 0; i < leafNode.keys.size(); i++){
+            if (leafNode.keys.get(i)==key){
+                return leafNode.list_data.get(i);
+            }
+        }
+        throw new Exception("Key " + key + " is not in the tree, but could be inserted in this leaf : "+leafNode.keys);
+    }
+
     private LeafNode findLeafNode(int key) {
 
-        int i;
         // Find next node on path to appropriate leaf node
-        if (key < root.keys.get(root.keys.size() - 1)) {
-            for (i = 0; i < root.keys.size(); i++) {
-                if (key < root.keys.get(i)) {
-                    break;
-                }
+        // if (key < root.keys.get(root.keys.size() - 1)) {
+        int index = root.keys.size();
+        for (int i = 0; i < root.keys.size(); i++) {
+            if (key < root.keys.get(i)) {
+                index = i;
+                break;
             }
-        } else {
-            i = root.keys.size();
         }
+        // } else {
+        // i = root.keys.size();
+        // }
         // return child if until child found is leafnode
-        Node child = root.children.get(i);
+        Node child = root.children.get(index);
         if (child instanceof LeafNode) {
             return (LeafNode) child;
         } else {
@@ -288,13 +301,13 @@ public class BPlusTree {
                 if (i != start) {
                     broNode.keys.add(keys.get(i));
                 }
-                broNode.children.add(children.get(i+1));
-                children.get(i+1).parent = broNode;
+                broNode.children.add(children.get(i + 1));
+                children.get(i + 1).parent = broNode;
             }
 
             // clear right part of list
             keys.subList(start, keys.size()).clear();
-            children.subList(start+1, children.size()).clear();
+            children.subList(start + 1, children.size()).clear();
 
             if (parent == null) {
 

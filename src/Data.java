@@ -6,4 +6,8 @@ public class Data {
     Data(String info){
         this.info = info;
     }
+
+    public String toString(){
+        return this.info;
+    }
 }
