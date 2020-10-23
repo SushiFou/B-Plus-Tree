@@ -16,7 +16,7 @@ public class BPlusTree {
     // degree = Max branching factor (=max_children per node)
     // So Max keys = Max branching factor - 1
 
-    int degree;
+    int degree; // max 
     InnerNode root = null;
     public LeafNode firstLeafNode;
 
