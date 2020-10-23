@@ -16,13 +16,13 @@ public class BPlusTree {
     // degree = Max branching factor (=max_children per node)
     // So Max keys = Max branching factor - 1
 
-    int degree; // max 
+    int degree; 
     InnerNode root = null;
     public LeafNode firstLeafNode;
 
     BPlusTree(String file, int degree) throws NumberFormatException, Exception {
 
-        this.degree = degree;
+        this.degree = degree;//test1
         this.firstLeafNode = new LeafNode();
         add_file(file);
     }
