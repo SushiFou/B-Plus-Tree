@@ -1,0 +1,5 @@
+remplacer les arraylist par des listes simples
+faire le bulk loading
+faire le delete
+faire le multithread safe
+faire SPARK
