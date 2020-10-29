@@ -1,3 +1,4 @@
+left and right sibling pour inner nodes (must for delete)
 remplacer les arraylist par des listes simples
 faire le bulk loading
 faire le delete

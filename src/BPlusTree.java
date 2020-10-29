@@ -16,15 +16,15 @@ public class BPlusTree {
     // degree = Max branching factor (=max_children per node)
     // So Max keys = Max branching factor - 1
 
-    int degree; 
+    int degree;
     InnerNode root = null;
     public LeafNode firstLeafNode;
 
     BPlusTree(String file, int degree) throws NumberFormatException, Exception {
 
-        this.degree = degree;//test1
+        this.degree = degree;// test1
         this.firstLeafNode = new LeafNode();
-        add_file(file);
+        // add_file(file);
     }
 
     void print_Tree(Node node, int h) {
@@ -51,6 +51,84 @@ public class BPlusTree {
         }
     }
 
+    // need the csv to be sorted (ExternalMergeSort)
+    public void createLeavesLayer(String file, Float fillingFactor) throws NumberFormatException, Exception {
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            Boolean firstline = true;
+            LeafNode actualLeafNode = this.firstLeafNode;
+            int num_keys = (int) (fillingFactor * (this.degree - 1));
+            int i = 0;
+
+            while ((line = br.readLine()) != null) {
+
+                String[] value = line.split(";");
+                if (firstline) {
+                    firstline = false;
+                } else {
+                    // create all leaves with fillingFactor*(degre-1) keys
+                    if (i < num_keys) {
+                        actualLeafNode.addData(Integer.parseInt(value[0]), new Data(value[1]));
+                        i++;
+                    } else {
+                        // key limit so we create a new leaf and we make them siblings
+                        i = 0;
+                        BPlusTree.LeafNode newLeaf = new LeafNode();
+                        newLeaf.previous = actualLeafNode; // make siblings
+                        actualLeafNode.next = newLeaf;
+                        actualLeafNode = newLeaf;
+                        actualLeafNode.addData(Integer.parseInt(value[0]), new Data(value[1]));
+                        i++;
+                    }
+                }
+            }
+        }
+    }
+
+    // need the csv to be sorted (ExternalMergeSort)
+    // the filling factor is a number between 0.5 and 1 -> % of how much we fill the
+    // leaves
+    public void bulk_loading(String file, Float fillingFactor) throws NumberFormatException, Exception {
+        createLeavesLayer(file, fillingFactor);
+
+        BPlusTree.LeafNode actual = this.firstLeafNode;
+
+        while (actual != null) {
+            // build tree upon the leaves
+            if (actual != this.firstLeafNode) {
+                if (actual.previous.parent != null) {
+                    // System.out.println("parent is not null");
+                    actual.previous.parent.addKey(actual.keys.get(0), actual);
+                    if (actual.previous.parent.isOverflow()) {
+
+                        // System.out.println("parent is Overflow");
+                        Node p = actual.previous.parent;
+                        // repeat until no split is possible
+                        while (p != null) {
+                            if (p.isOverflow()) {
+                                p = p.split(); // return parent
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    InnerNode newParent = new InnerNode();
+                    newParent.keys.add(actual.keys.get(0));
+                    newParent.children.add(actual.previous);
+                    newParent.children.add(actual);
+                    actual.previous.parent = newParent;
+                    actual.parent = newParent;
+                    this.root = newParent;
+                }
+
+            }
+            actual = actual.next;
+        }
+
+    }
+
     // read and add whole csv
     public void add_file(String file) throws NumberFormatException, Exception {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -71,24 +149,24 @@ public class BPlusTree {
     public void add(Integer key, Data data) throws Exception {
 
         // find good leafNode
-        System.out.println("We want to add the key : " + key);
+        // System.out.println("We want to add the key : " + key);
 
         LeafNode freeLeaf = (this.root == null) ? this.firstLeafNode : findLeafNode(key);
-        System.out.println("We found the leafNode :" + freeLeaf.keys);
-        if (freeLeaf.parent != null) {
-            System.out.println("With parents :" + freeLeaf.parent.keys);
-        }
+        // System.out.println("We found the leafNode :" + freeLeaf.keys);
+        // if (freeLeaf.parent != null) {
+        // System.out.println("With parents :" + freeLeaf.parent.keys);
+        // }
 
         // add into
         freeLeaf.addData(key, data);
         // if the add generated an overflow
         if (freeLeaf.isOverflow()) {
-            System.out.println("LeafNode Overflow");
+            // System.out.println("LeafNode Overflow");
             Node broNode = freeLeaf.split();
 
             // split for the first time
             if (freeLeaf.parent == null) {
-                System.out.println("parent is null");
+                // System.out.println("parent is null");
                 // create parent for broNode and actual leafNode
                 InnerNode newParent = new InnerNode();
                 newParent.keys.add(broNode.keys.get(0));
@@ -101,11 +179,11 @@ public class BPlusTree {
 
             // update parents
             else {
-                System.out.println("parent is not null");
+                // System.out.println("parent is not null");
                 freeLeaf.parent.addKey(broNode.keys.get(0), broNode);
                 if (freeLeaf.parent.isOverflow()) {
 
-                    System.out.println("parent is Overflow");
+                    // System.out.println("parent is Overflow");
                     Node p = freeLeaf.parent;
                     // repeat until no split is possible
                     while (p != null) {
@@ -121,15 +199,16 @@ public class BPlusTree {
     }
 
     public Data search(int key) throws Exception {
-        
-        LeafNode leafNode= findLeafNode(key);
-        
-        for (int i = 0; i < leafNode.keys.size(); i++){
-            if (leafNode.keys.get(i)==key){
+
+        LeafNode leafNode = findLeafNode(key);
+
+        for (int i = 0; i < leafNode.keys.size(); i++) {
+            if (leafNode.keys.get(i) == key) {
                 return leafNode.list_data.get(i);
             }
         }
-        throw new Exception("Key " + key + " is not in the tree, but could be inserted in this leaf : "+leafNode.keys);
+        throw new Exception(
+                "Key " + key + " is not in the tree, but could be inserted in this leaf : " + leafNode.keys);
     }
 
     private LeafNode findLeafNode(int key) {
