@@ -9,10 +9,9 @@ public class App {
         test.add_file("generated_data.csv");
         long endTime = System.currentTimeMillis();
 
-        
         NumberFormat formatter = new DecimalFormat("#0.00000");
         System.out.println("Execution time is " + formatter.format((endTime - startTime) / 1000d) + " seconds");
-        // test.print_Tree();
+        test.print_Tree();
 
         // startTime = System.currentTimeMillis();
         // Data result = test.search(543);
@@ -31,7 +30,7 @@ public class App {
         
         formatter = new DecimalFormat("#0.00000");
         System.out.println("Execution time is " + formatter.format((endTime - startTime) / 1000d) + " seconds");
-        // test.print_Tree();
+        test.print_Tree();
 
 
     }

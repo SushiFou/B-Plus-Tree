@@ -260,12 +260,6 @@ public class BPlusTree {
         int max_keys = degree - 1;
 
         @Override
-        Data getData(Integer key) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
         void deleteData(Integer key) {
             // TODO Auto-generated method stub
 
@@ -328,6 +322,8 @@ public class BPlusTree {
         ArrayList<Node> children = new ArrayList<Node>();
         int max_keys = degree - 1;
         int max_children = degree;
+        InnerNode next = null;
+        InnerNode previous = null;
 
         void addKey(Integer key, Node child) throws Exception {
             // binarySearch returns index where we can insert
@@ -343,12 +339,6 @@ public class BPlusTree {
                 children.add(idx + 1, child);
                 child.parent = this;
             }
-        }
-
-        @Override
-        Data getData(Integer key) {
-            // TODO Auto-generated method stub
-            return null;
         }
 
         @Override
@@ -372,8 +362,16 @@ public class BPlusTree {
             // Inner node split
             // middle right element to promote technic
 
-            // create brother node and add all right part of list
+            // create brother node and add all right part of list and make them siblings
             InnerNode broNode = new InnerNode();
+            
+            if (this.next != null) {
+                broNode.next = this.next;
+                this.next.previous = broNode;
+            }
+            broNode.previous = this;
+            this.next = broNode;
+            
             int start = (keys.size() / 2);
             int key_to_promote = keys.get(start);
             for (int i = start; i < keys.size(); i++) {
@@ -406,7 +404,6 @@ public class BPlusTree {
                 this.parent.addKey(key_to_promote, broNode);
 
             }
-
             return this.parent;
         }
 
