@@ -1,15 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Map;
-import java.util.Set;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.ParseException;
 
 public class BPlusTree {
 
@@ -198,6 +190,23 @@ public class BPlusTree {
         }
     }
 
+    public void delete(int key) throws Exception {
+
+        boolean in = false;
+        LeafNode toDelete = this.findLeafNode(key);
+        for (int i = 0; i < toDelete.keys.size(); i++) {
+            if (toDelete.keys.get(i) == key) {
+                in = true;
+                break;
+            }
+        }
+        if (!in) {
+            throw new Exception("Key " + key + " is not in the tree so cannot be deleted");
+        }
+
+        toDelete.delete(key);
+    }
+
     public Data search(int key) throws Exception {
 
         LeafNode leafNode = findLeafNode(key);
@@ -258,11 +267,91 @@ public class BPlusTree {
         LeafNode next = null;
         LeafNode previous = null;
         int max_keys = degree - 1;
+        int min_keys = max_keys % 2 == 0 ? max_keys / 2 : 1 + max_keys / 2;
 
         @Override
-        void deleteData(Integer key) {
-            // TODO Auto-generated method stub
+        void delete(Integer key) throws Exception {
+            // delete for LeafNode will call delete for InnerNode
+            int ind = this.keys.indexOf((Integer) key);
+            this.keys.remove(ind);
+            this.list_data.remove(ind);
 
+            if (this.isUnderflow()) {
+                /*
+                 * --------------------------------------------------------- leave L is
+                 * underflow: fix the size of L with transfer or merge
+                 * ---------------------------------------------------------
+                 */
+                // to be siblings they must have the same parent
+                LeafNode left_sibling = null;
+                LeafNode right_sibling = null;
+
+                if (this.previous != null) {
+                    left_sibling = this.parent.equals(this.previous.parent) ? this.previous : null;
+                }
+                if (this.next != null) {
+                    right_sibling = this.parent.equals(this.next.parent) ? this.next : null;
+                }
+                try {
+                    // check if previous sibling can give keys
+                    if (left_sibling.keys.size() > left_sibling.min_keys) {
+                        // transfer last key and ptr from leftSibling(L) into L
+                        this.keys.add(0, left_sibling.keys.get(left_sibling.keys.size() - 1));
+                        this.list_data.add(0, left_sibling.list_data.get(left_sibling.list_data.size() - 1));
+                        left_sibling.keys.remove(left_sibling.keys.size() - 1);
+                        left_sibling.list_data.remove(left_sibling.list_data.size() - 1);
+                        // update the key in innernode
+                        this.parent.keys.set(this.parent.children.indexOf(this) - 1, this.keys.get(0));
+                    }
+                    // check if next sibling can give keys
+                    else if (right_sibling.keys.size() > right_sibling.min_keys) {
+                        // transfer first key and ptr from rightSibling(L) into L
+                        this.keys.add(right_sibling.keys.get(0));
+                        this.list_data.add(right_sibling.list_data.get(0));
+                        right_sibling.keys.remove(0);
+                        right_sibling.list_data.remove(0);
+                        // update the key in innernode
+                        this.parent.keys.set(this.parent.children.indexOf(this), right_sibling.keys.get(0));
+
+                    }
+                } catch (Exception e) {
+                    // check if next doesnt exist so we can merge with previous
+                    if (left_sibling != null) {
+                        // merge leftSibling(L) + L + L's last pointer into leftSibling(L);
+                        for (int i = 0; i < this.keys.size(); i++) {
+                            left_sibling.addData(this.keys.get(i), this.list_data.get(i));
+                        }
+                        // update next and previous
+                        if (this.next != null) {
+                            left_sibling.next = this.next;
+                            this.next.previous = left_sibling;
+                        }
+                        // delete key and right subtree in parent node
+                        Integer parentKey_ToDelete = this.parent.keys.get(this.parent.children.indexOf(this) - 1);
+                        this.parent.delete(parentKey_ToDelete);
+                        // delete L add return something to notice the garbage collector #TODO
+                    }
+                    // so next exists and we can merge with it
+                    else {
+                        // no dead code
+                        // Merge L + rightSibling(L) + last pointer into L;
+                        for (int i = 0; i < right_sibling.keys.size(); i++) {
+                            this.addData(right_sibling.keys.get(i), right_sibling.list_data.get(i));
+                        }
+                        // update next and previous
+                        if (right_sibling.next != null) {
+                            this.next = right_sibling.next;
+                            right_sibling.next.previous = this;
+                        }
+                        // delete key and right subtree in parent node
+                        Integer parentKey_ToDelete = this.parent.keys
+                                .get(this.parent.children.indexOf(right_sibling) - 1);
+                        this.parent.delete(parentKey_ToDelete);
+                        // delete L add return something to notice the garbage collector #TODO
+                    }
+                }
+            }
+            // else we are done
         }
 
         void addData(Integer key, Data data) {
@@ -309,7 +398,16 @@ public class BPlusTree {
         @Override
         boolean isOverflow() {
 
-            if (keys.size() > max_keys) {
+            if (keys.size() > this.max_keys) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        boolean isUnderflow() {
+            if (keys.size() < this.min_keys) {
                 return true;
             } else {
                 return false;
@@ -320,8 +418,8 @@ public class BPlusTree {
     class InnerNode extends Node {
 
         ArrayList<Node> children = new ArrayList<Node>();
-        int max_keys = degree - 1;
         int max_children = degree;
+        int min_children = max_children % 2 == 0 ? max_children / 2 : 1 + max_children / 2;
         InnerNode next = null;
         InnerNode previous = null;
 
@@ -342,15 +440,106 @@ public class BPlusTree {
         }
 
         @Override
-        void deleteData(Integer key) {
-            // TODO Auto-generated method stub
+        void delete(Integer key) throws Exception {
+            /*
+             * Delete key and right children link from the node in B+-tree
+             */
+            this.children.remove(this.keys.indexOf(key) + 1);
+            this.keys.remove(key);
+
+            // check if its root
+            if (this.parent == null) {
+                // if root is empty we delete it
+                if (this.keys.size()==0){
+                    InnerNode newRoot = (this.children.get(0) instanceof InnerNode) ? (InnerNode) this.children.get(0) : null;
+                    root = newRoot;
+                }
+            }
+            // Check for underflow condition
+            else if (this.isUnderflow()) {
+                /*
+                 * 
+                 * InnerNode N is underflow: fix the size of N with transfer or merge
+                 * 
+                 */
+                // to be siblings they must have the same parent
+                InnerNode left_sibling = null;
+                InnerNode right_sibling = null;
+
+                if (this.previous != null) {
+                    left_sibling = this.parent.equals(this.previous.parent) ? this.previous : null;
+                }
+                if (this.next != null) {
+                    right_sibling = this.parent.equals(this.next.parent) ? this.next : null;
+                }
+                try {
+                    // check if previous sibling can give keys
+                    if (left_sibling.children.size() > left_sibling.min_children) {
+                        // transfer last key from leftSibling(N) through parent into N as the first key;
+                        this.keys.add(0, this.parent.keys.get(this.parent.children.indexOf(this) - 1));
+                        this.parent.keys.set(this.parent.children.indexOf(this) - 1,
+                                left_sibling.keys.get(left_sibling.keys.size() - 1));
+                        // transfer right subtree link into N as the first link
+                        this.children.add(0, left_sibling.children.get(left_sibling.children.size() - 1));
+                        left_sibling.children.get(left_sibling.children.size() - 1).parent = this;
+                        // deletes
+                        left_sibling.keys.remove(left_sibling.keys.size() - 1);
+                        left_sibling.children.remove(left_sibling.children.size() - 1);
+                    }
+                    // check if next sibling can give keys
+                    else if (right_sibling.children.size() > right_sibling.min_children) {
+                        // transfer first key from rightSibling(N) through parent into N as the last
+                        // key;
+                        this.keys.add(this.parent.keys.get(this.parent.children.indexOf(this)));
+                        this.parent.keys.set(this.parent.children.indexOf(this), right_sibling.keys.get(0));
+                        // transfer left subtree link into N as the last link
+                        this.children.add(right_sibling.children.get(0));
+                        right_sibling.children.get(0).parent = this;
+                        // deletes
+                        right_sibling.keys.remove(0);
+                        right_sibling.children.remove(0);
+
+                    }
+                } catch (Exception e) {
+                    // check if next doesnt exist so we can merge with previous
+                    if (left_sibling != null) {
+                        // merge N with left sibling node
+                        // Merge (1) leftSibling(N) + (2) key in parent node + (3) N
+                        // into the leftSibling(N) node
+                        Integer transferedKey = this.parent.keys.get((this.parent.children.indexOf(this) - 1));
+                        left_sibling.keys.add(transferedKey);
+                        left_sibling.children.add(this.children.get(0));
+                        this.children.get(0).parent = left_sibling;
+                        for (int i = 0; i < this.keys.size(); i++) {
+                            left_sibling.addKey(this.keys.get(i), this.children.get(i + 1));
+                        }
+                        // Delete ( transfered key, right subtree ptr, parent(N) ) #recursive
+                        this.parent.delete(transferedKey);
+                    }
+                    // so next exists and we can merge with it
+                    else {
+                        // merge N with right sibling node
+                        // Merge (1) N + (2) key in parent node + (3) rightSibling(N)
+                        // into the node N;
+                        Integer transferedKey = this.parent.keys.get((this.parent.children.indexOf(this)));
+                        this.keys.add(transferedKey);
+                        this.children.add(right_sibling.children.get(0));
+                        right_sibling.children.get(0).parent = this;
+                        for (int i = 0; i < right_sibling.keys.size(); i++) {
+                            this.addKey(right_sibling.keys.get(i), right_sibling.children.get(i + 1));
+                        }
+                        // Delete ( transfered key, right subtree ptr, parent(N) ) #recursive
+                        this.parent.delete(transferedKey);
+                    }
+                }
+            }
 
         }
 
         @Override
         boolean isOverflow() {
 
-            if (children.size() > max_children) {
+            if (children.size() > this.max_children) {
                 return true;
             } else {
                 return false;
@@ -364,14 +553,14 @@ public class BPlusTree {
 
             // create brother node and add all right part of list and make them siblings
             InnerNode broNode = new InnerNode();
-            
+
             if (this.next != null) {
                 broNode.next = this.next;
                 this.next.previous = broNode;
             }
             broNode.previous = this;
             this.next = broNode;
-            
+
             int start = (keys.size() / 2);
             int key_to_promote = keys.get(start);
             for (int i = start; i < keys.size(); i++) {
@@ -405,6 +594,15 @@ public class BPlusTree {
 
             }
             return this.parent;
+        }
+
+        @Override
+        boolean isUnderflow() {
+            if (children.size() < this.min_children) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
     }
