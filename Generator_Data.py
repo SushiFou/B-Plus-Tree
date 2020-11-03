@@ -1,7 +1,7 @@
 import random
 random.seed(702140)
 
-n=15
+n=20
 
 List_Nicknames=["Assi","Aggy","Ben","Bob","Bully" ,"Cobra","Cats Eyes" ,"Cloudy",
 "Dolfo" ,"Dutch","Eagle", "Fish","Fighter","Gabby" ,"Hoppy" ,"Hamish" ,"Igo" ,
