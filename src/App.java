@@ -1,6 +1,7 @@
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
+
 public class App {
     public static void main(String[] args) throws Exception {
 
@@ -11,31 +12,16 @@ public class App {
 
         NumberFormat formatter = new DecimalFormat("#0.00000");
         System.out.println("Execution time is " + formatter.format((endTime - startTime) / 1000d) + " seconds");
-        test.print_Tree();
         
-        for(int i=1 ; i<18;i++){
+
+        for(int i=1 ; i<500001;i++){
             test.delete(i);
         }
         test.print_Tree();
 
-        test.delete(18);
-        test.print_Tree();
-        
-        test.delete(19);
-        test.print_Tree();
-        
-        test.delete(20);
-        test.print_Tree();
-
         // // test = new BPlusTree("generated_data_sorted.csv", 4);
         // // test.bulk_loading("generated_data_sorted.csv", 0.7f);
-        // // test.print_Tree();
 
-        // // test.delete(9);
-        // // test.print_Tree();
-
-        // // test.delete(4);
-        // // test.print_Tree();
 
         // startTime = System.nanoTime();
         // Data result = test.search(500123);

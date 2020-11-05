@@ -40,9 +40,10 @@ public class BPlusTree {
         System.out.println("B+Tree Printer :");
         if (this.root != null) {
             this.print_Tree(this.root, 0);
-        }
-        else{
-            System.out.println(this.firstLeafNode.keys);
+        } else {
+            for (int key : this.firstLeafNode.keys) {
+                System.out.println(key);
+            }
         }
     }
 
@@ -226,7 +227,7 @@ public class BPlusTree {
 
         // Find next node on path to appropriate leaf node
         // if (key < root.keys.get(root.keys.size() - 1)) {
-        if(this.root!=null){
+        if (this.root != null) {
             int index = root.keys.size();
             for (int i = 0; i < root.keys.size(); i++) {
                 if (key < root.keys.get(i)) {
@@ -244,8 +245,7 @@ public class BPlusTree {
             } else {
                 return findLeafNode((InnerNode) child, key);
             }
-        }
-        else {
+        } else {
             return this.firstLeafNode;
         }
     }
@@ -283,7 +283,9 @@ public class BPlusTree {
             this.keys.remove(ind);
             this.list_data.remove(ind);
 
-            if (this.isUnderflow() && !this.equals(firstLeafNode)) {
+            if (this.isUnderflow() && root != null) {
+                // we need root != null to be sure we have multiple levels in the
+                // tree, otherwsise we don't enter this condititon
                 /*
                  * --------------------------------------------------------- leave L is
                  * underflow: fix the size of L with transfer or merge
@@ -339,7 +341,6 @@ public class BPlusTree {
                 }
                 // so next exists and we can merge with it
                 else {
-                    // no dead code
                     // Merge L + rightSibling(L) + last pointer into L;
                     for (int i = 0; i < right_sibling.keys.size(); i++) {
                         this.addData(right_sibling.keys.get(i), right_sibling.list_data.get(i));
@@ -518,6 +519,11 @@ public class BPlusTree {
                     for (int i = 0; i < this.keys.size(); i++) {
                         left_sibling.addKey(this.keys.get(i), this.children.get(i + 1));
                     }
+                    // update next and previous
+                    if (this.next != null) {
+                        left_sibling.next = this.next;
+                        this.next.previous = left_sibling;
+                    }
                     // Delete ( transfered key, right subtree ptr, parent(N) ) #recursive
                     this.parent.delete(transferedKey);
                 }
@@ -532,6 +538,11 @@ public class BPlusTree {
                     right_sibling.children.get(0).parent = this;
                     for (int i = 0; i < right_sibling.keys.size(); i++) {
                         this.addKey(right_sibling.keys.get(i), right_sibling.children.get(i + 1));
+                    }
+                    // update next and previous
+                    if (right_sibling.next != null) {
+                        this.next = right_sibling.next;
+                        right_sibling.next.previous = this;
                     }
                     // Delete ( transfered key, right subtree ptr, parent(N) ) #recursive
                     this.parent.delete(transferedKey);
