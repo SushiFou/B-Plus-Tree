@@ -1,0 +1,168 @@
+---
+title: "plot System BigData"
+author: "Soumaya SABRY"
+date: "02/11/2020"
+output: html_document
+---
+```{r}
+library(data.table)
+library(tidyverse)
+library(kableExtra)
+library(DT)
+library(MLmetrics)
+```
+```{r}
+library(tidyverse)
+```
+
+```{r}
+dataset <- read.csv('add.csv', header=F)
+dataset<-t(dataset)
+dataset<- as.data.frame(dataset)
+colnames(dataset) <- c("X","Single", "Multi")
+```
+
+
+```{r}
+plot(as.matrix(dataset["Single"]))
+```
+
+
+```{r}
+lab_names=c( "Multi","Single")
+dataset %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Insert in millisec",x = "nb of point", y = "Time")
+  #scale_x_continuous(breaks=seq(0,tail(dataLab3$TimeStamp, n=1),10))
+```
+################################
+```{r}
+lab_names=c( "Multi","Single")
+dataset_A <- read.csv('F_add.csv', header=F)
+dataset_A<-t(dataset_A)
+dataset_A<- as.data.frame(dataset_A)
+colnames(dataset_A) <- c("X","Single", "Multi")
+
+dataset_A %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Add in millisec",x = "nb of point", y = "Time")
+```
+
+```{r}
+dataset_BL <- read.csv('BL.csv', header=F)
+dataset_BL<-t(dataset_BL)
+dataset_BL<- as.data.frame(dataset_BL)
+colnames(dataset_BL) <- c("X","Single", "Multi")
+
+dataset_BL %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "BL in millisec",x = "Number of Data to insert", y = "Time")
+```
+```{r}
+lab_name_BLA=c( "Multi","BL Multi","Single","BL Single")
+dataset_BLA <- cbind(dataset_A,dataset_BL[,2],dataset_BL[,3])
+colnames(dataset_BLA) <- c("X","Single", "Multi","Single BL","Multi BL")
+
+dataset_BLA %>% pivot_longer(cols = c("Single", "Multi","Single BL","Multi BL")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_name_BLA),shape = factor(name,labels = lab_name_BLA)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Insert in millisec",x = "Number of Data to insert", y = "Time(ms)")
+```
+
+
+```{r}
+dataset_S <- read.csv('F_search.csv', header=F)
+dataset_S<-t(dataset_S)
+dataset_S<- as.data.frame(dataset_S)
+
+colnames(dataset_S) <- c("X","Single", "Multi")
+
+dataset_S %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Search in millisec",x = "Number of Data to search", y = "Time(ms)")
+```
+```{r}
+dataset_S <- read.csv('F_search.csv', header=F)
+dataset_S<-t(dataset_S)
+dataset_S<- as.data.frame(dataset_S)
+
+dataset_Sans <- read.csv('searchWithoutLock.csv', header=F)
+dataset_Sans<-t(dataset_Sans)
+dataset_Sans<- as.data.frame(dataset_Sans)
+
+lab_name_SS=c( "Multi","Multi (Without lock)","Single")
+dataset_SS <- cbind(dataset_S,dataset_Sans[,3])
+colnames(dataset_SS) <- c("X","Single", "Multi","Multi (Sans)")
+
+
+dataset_SS %>% pivot_longer(cols = c("Single", "Multi","Multi (Sans)")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_name_SS),shape = factor(name,labels = lab_name_SS)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Search in millisec",x = "Number of Data to search", y = "Time(ms)")
+```
+
+```{r}
+dataset_D <- read.csv('_Delet.csv', header=F)
+dataset_D<-t(dataset_D)
+dataset_D<- as.data.frame(dataset_D)
+colnames(dataset_D) <- c("X","Single", "Multi")
+
+dataset_D %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Delet in millisec",x =  "Number of Data to delet", y = "Time(ms)")
+```
+```{r}
+dataset_M<- read.csv('CSV_V1/mixed.csv', header=F)
+dataset_M<-t(dataset_M)
+dataset_M<- as.data.frame(dataset_M)
+colnames(dataset_M) <- c("X","Single", "Multi")
+
+dataset_M %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "Mixed operation in millisec",x = "Number of Data to (Insert and Search)", y = "Time(ms)")
+```
+```{r}
+dataset_M<- read.csv('CSV_V3/search_degree100.csv', header=F)
+dataset_M<-t(dataset_M)
+dataset_M<- as.data.frame(dataset_M)
+colnames(dataset_M) <- c("X","Single", "Multi")
+
+dataset_M %>% pivot_longer(cols = c("Single", "Multi")) %>% 
+  ggplot(aes(x=X, y= value, color=factor(name,labels = lab_names),shape = factor(name,labels = lab_names)))+
+  geom_line(linetype = "dashed") +
+  geom_point(size=2) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),legend.position = "top",legend.title = element_blank()) + 
+  labs(title = "search100 in millisec",x = "Number of Data to (Insert and Search)", y = "Time(ms)")
+```
+
