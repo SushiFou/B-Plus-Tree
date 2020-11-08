@@ -1,6 +1,0 @@
-done left and right sibling pour inner nodes (must for delete)
-done remplacer les arraylist par des listes simples
-done faire le bulk loading
-faire le delete
-faire le multithread safe
-faire SPARK
