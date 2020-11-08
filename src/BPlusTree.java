@@ -11,7 +11,10 @@ public class BPlusTree {
     int degree;
     InnerNode root = null;
     public LeafNode firstLeafNode;
-
+    //used in spark
+    int max = Integer.MIN_VALUE;
+    int min = Integer.MAX_VALUE;
+    
     BPlusTree(String file, int degree) throws NumberFormatException, Exception {
 
         this.degree = degree;// test1
@@ -124,7 +127,16 @@ public class BPlusTree {
         }
 
     }
-
+    //add from a list , used in spark
+    public void add_file(ArrayList<Data> listData) throws Exception
+    {
+        for( Data d : listData ){
+            if(d.idx > max)max = d.idx ;
+            if(d.idx < min)min = d.idx ;
+            add(d.idx, d);
+        }
+ 
+    }
     // read and add whole csv
     public void add_file(String file) throws NumberFormatException, Exception {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
