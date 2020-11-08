@@ -99,7 +99,7 @@ public class AppMulti {
         System.out.printf("time For Insert on Multi : %d ms\n\n", end - start);
         /////////////////////test2///////////////////////////////
         //long 
-        // start = System.currentTimeMillis();
+        start = System.currentTimeMillis();
 
         // Thread thread_S_1_1 = new Thread(search_Job(test,300));
         // thread_S_1_1.start();
