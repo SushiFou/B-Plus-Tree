@@ -93,7 +93,7 @@ public class SingleVsMultiSearch {
         // ---- test for searching -----
 
         // indexes we will search
-        int datasetSize = 10000000;
+        int datasetSize = 30000000;
         // int sampleSize = datasetSize / 5;
 
         // create list of sampleSize random elements between 1 and datasetSize
