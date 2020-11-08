@@ -194,7 +194,7 @@ public class BPlusTree {
         }
     }
 
-    public void delete(int key) throws Exception {
+    public void delete(int key) {
 
         boolean in = false;
         LeafNode toDelete = this.findLeafNode(key);
@@ -205,9 +205,12 @@ public class BPlusTree {
             }
         }
         if (!in) {
-            throw new Exception("Key " + key + " is not in the tree so cannot be deleted");
+            System.out.println("Key " + key + " is not in the tree so cannot be deleted");
         }
-        toDelete.delete(key);
+        else{
+            toDelete.delete(key);
+        }
+        
     }
 
     public Data search(int key) throws Exception {
@@ -277,7 +280,7 @@ public class BPlusTree {
         int min_keys = max_keys % 2 == 0 ? max_keys / 2 : 1 + max_keys / 2;
 
         @Override
-        void delete(Integer key) throws Exception {
+        void delete(Integer key) {
             // delete for LeafNode will call delete for InnerNode
             int ind = this.keys.indexOf((Integer) key);
             this.keys.remove(ind);
@@ -337,7 +340,7 @@ public class BPlusTree {
                     // delete key and right subtree in parent node
                     Integer parentKey_ToDelete = this.parent.keys.get(this.parent.children.indexOf(this) - 1);
                     this.parent.delete(parentKey_ToDelete);
-                    // delete L add return something to notice the garbage collector #TODO
+                    // delete L add return something to notice the garbage collector
                 }
                 // so next exists and we can merge with it
                 else {
@@ -353,7 +356,7 @@ public class BPlusTree {
                     // delete key and right subtree in parent node
                     Integer parentKey_ToDelete = this.parent.keys.get(this.parent.children.indexOf(right_sibling) - 1);
                     this.parent.delete(parentKey_ToDelete);
-                    // delete L add return something to notice the garbage collector #TODO
+                    // delete L add return something to notice the garbage collector
                 }
 
             }
@@ -369,6 +372,7 @@ public class BPlusTree {
             int binarySearch = Collections.binarySearch(keys, key);
             int idx = binarySearch >= 0 ? binarySearch : -binarySearch - 1;
             if (binarySearch >= 0) {
+                System.out.println("Key " + key + " already present");
                 // we can add more data to existing key
             } else {
                 keys.add(idx, key);
@@ -429,14 +433,14 @@ public class BPlusTree {
         InnerNode next = null;
         InnerNode previous = null;
 
-        void addKey(Integer key, Node child) throws Exception {
+        void addKey(Integer key, Node child) {
             // binarySearch returns index where we can insert
             // this methods automatically sort the list in order
             int binarySearch = Collections.binarySearch(keys, key);
             int idx = binarySearch >= 0 ? binarySearch : -binarySearch - 1;
 
             if (binarySearch >= 0) {
-                throw new Exception("Key " + key + " already present");
+                System.out.println("Key " + key + " already present");
             } else {
                 keys.add(idx, key);
                 // pb here
@@ -446,7 +450,7 @@ public class BPlusTree {
         }
 
         @Override
-        void delete(Integer key) throws Exception {
+        void delete(Integer key) {
             /*
              * Delete key and right children link from the node in B+-tree
              */
