@@ -128,7 +128,7 @@ public class BPlusTree {
 
     }
     //add from a list , used in spark
-    public void add_file(ArrayList<Data> listData) throws Exception
+    public void add_list(ArrayList<Data> listData) throws Exception
     {
         for( Data d : listData ){
             if(d.idx > max)max = d.idx ;
@@ -138,7 +138,7 @@ public class BPlusTree {
  
     }
     // read and add whole csv
-    public void add_list(String file) throws NumberFormatException, Exception {
+    public void add_file(String file) throws NumberFormatException, Exception {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             Boolean firstline = true;
