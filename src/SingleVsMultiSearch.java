@@ -85,7 +85,7 @@ public class SingleVsMultiSearch {
         // tree
         BPlusTreeMulti treeMulti = new BPlusTreeMulti("generated_data.csv", 100);
         startTime = System.currentTimeMillis();
-        treeMulti.add_list("generated_data.csv");
+        treeMulti.add_file("generated_data.csv");
         endTime = System.currentTimeMillis();
         System.out.println(
                 "Execution time for Tree Creation " + formatter.format((endTime - startTime) / 1000d) + " seconds");
