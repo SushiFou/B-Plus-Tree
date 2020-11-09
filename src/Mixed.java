@@ -126,7 +126,7 @@ public class Mixed {
                     
                 // tree
                 BPlusTreeMulti treeMulti = new BPlusTreeMulti("generated_data.csv", 100);
-                treeMulti.add_file("generated_data.csv");
+                treeMulti.add_list("generated_data.csv");
 
                 if ((epoch+1) % 5 == 0) {
                     System.out.print(epoch+1 + ",");
@@ -167,7 +167,7 @@ public class Mixed {
 
                 // tree
                 treeMulti = new BPlusTreeMulti("generated_data.csv", 100);
-                treeMulti.add_file("generated_data.csv");
+                treeMulti.add_list("generated_data.csv");
 
                 // SINGLE thread
 
